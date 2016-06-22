@@ -1,7 +1,8 @@
 import { combineReducers } from 'redux';
-//import PostReducer from './reducer_post';
+import DistanceReducer from './reducer_distance';
+
 const rootReducer = combineReducers({
-    state:(state = {}) => state
+    distance: DistanceReducer
 });
 
 export default rootReducer;

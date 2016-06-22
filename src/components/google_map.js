@@ -3,6 +3,10 @@
  */
 import React, {Component} from 'react';
 import { GoogleMapLoader, GoogleMap , Marker } from 'react-google-maps';
+import {fetchDistanceMatrix} from '../actions/index';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
 
 export default class MyGoogleMap extends Component {
     constructor(props){
@@ -10,22 +14,41 @@ export default class MyGoogleMap extends Component {
 
         this.state = {
             origin:{lat:49.2827, lng:-123.1207},
-            destination:{lat:'', lng:''},
+            destination:{lat:49.222289, lng:-122.997237},
             zoom:12,
             markers:[]
         };
 
         this.onMapClick = this.onMapClick.bind(this);
+        this.retrieveDataFromGoogleMap = this.retrieveDataFromGoogleMap.bind(this);
 
     }
 
     onMapClick(event){
-        this.setState({
-            origin:{lat:45.2827, lng:-123.1207},
-            destination:{lat:'', lng:''},
-            zoom:8,
-            markers:[]
-        });
+
+        console.log('origin :'+this.state.origin);
+        console.log('destination :'+this.state.destination);
+
+        var origin = new google.maps.LatLng(this.state.origin);
+        var destination = new google.maps.LatLng(this.state.destination);
+
+        var service = new google.maps.DistanceMatrixService();
+
+        const param = {
+            origins: [origin],
+            destinations: [destination],
+            travelMode: google.maps.TravelMode.DRIVING,
+            /*transitOptions: TransitOptions,*/
+            /*drivingOptions: DrivingOptions,*/
+            avoidHighways: false,
+            avoidTolls: false
+        };
+
+        service.getDistanceMatrix(param, this.retrieveDataFromGoogleMap);
+    }
+
+    retrieveDataFromGoogleMap(response, status){
+        this.props.fetchDistanceMatrix(response);
     }
 
     render() {
@@ -37,11 +60,7 @@ export default class MyGoogleMap extends Component {
                         defaultZoom={this.state.zoom}
                         defaultCenter={{lat: this.state.origin.lat, lng: this.state.origin.lng}}
                         onClick={this.onMapClick}>
-                        {this.state.markers.map((marker, index) => {
-                            return (
-                                {...marker}
-                            );
-                        })};
+
                     </GoogleMap>
                 }
             />
@@ -49,9 +68,9 @@ export default class MyGoogleMap extends Component {
     }
 }
 
-/*
+
 function mapDispatchToProps(dispatch) {
-    return bindActionCreators({ name_of_action_creator }, dispatch);
+    return bindActionCreators({ fetchDistanceMatrix }, dispatch);
 }
 
-export default connect(null, mapDispatchToProps)(MyGoogleMap);*/
+export default connect(null, mapDispatchToProps)(MyGoogleMap);

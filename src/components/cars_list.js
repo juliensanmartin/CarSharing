@@ -1,36 +1,49 @@
 /**
  * Created by bm03096 on 6/17/2016.
  */
-/*import react, {Component} from 'react';
+import React, {Component} from 'react';
 import { connect } from 'react-redux';
 
 class CarsList extends Component{
-
     renderCars(){
-        return this.props.cars.map((car) => {
-           return(
-               <li className="list-group-item" key={car.id}>
-                   <span className="pull-xs-right">{car.name}</span>
-               </li>
-           )
-        });
+        console.log('this.props.distance : '+ this.props.distance);
+
+        if (this.props.distance){
+            console.log('this.props.distance : '+ this.props.distance.rows);
+
+            return this.props.distance.rows.map((row) => {
+                return row.elements.map((data) => {
+                    return (
+                        <tr key={new Date()}>
+                            <td>{data.distance.text}</td>
+                            <td>{data.duration.text}</td>
+                        </tr>
+                    )
+                })
+            });
+        }
     }
 
     render(){
         return(
-            <div>
-                <h3>Options</h3>
-                <ul className="list-group">
-                    {this.renderCars()}
-                </ul>
-            </div>
+            <table className="table table-hover">
+                <thead>
+                <tr>
+                    <th>Distance</th>
+                    <th>Duration</th>
+                </tr>
+                </thead>
+                <tbody>
+                {this.renderCars()}
+                </tbody>
+            </table>
         );
     }
 }
 
 function mapStateToProps(state){
-    return {cars: state.cars.all};
+    return {distance: state.distance.distance};
 }
 
-export default connect(mapStateToProps,null)(CarsList);*/
+export default connect(mapStateToProps)(CarsList);
 
