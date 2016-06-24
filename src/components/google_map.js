@@ -19,34 +19,50 @@ export default class MyGoogleMap extends Component {
             markers:[]
         };
 
-        this.onMapClick = this.onMapClick.bind(this);
+        this.handleMapClick = this.handleMapClick.bind(this);
         this.retrieveDataFromGoogleMap = this.retrieveDataFromGoogleMap.bind(this);
+        this.createMarker = this.createMarker.bind(this);
+        this.calculateMatrix = this.calculateMatrix.bind(this);
+        this.handleDragEnd = this.handleDragEnd.bind(this);
 
         this.service = new google.maps.DistanceMatrixService();
 
     }
 
-    onMapClick(event) {
+    handleMapClick(event) {
         // if origin is null then we set origin otherwise we set destination
         (!this.state.origin) ? this.state.origin = event.latLng : this.state.destination = event.latLng;
 
-        var originMarker = new google.maps.Marker({
-            position: this.state.origin,
-            animation: google.maps.Animation.DROP,
-            draggable:true,
-            title: 'From',
-            key: Date.now()
-        });
+        var originMarker = this.createMarker(this.state.origin, 'From', 1);
+        var destinationMarker = this.createMarker(this.state.destination, 'To', 2);
 
-        var destinationMarker = new google.maps.Marker({
-            position: this.state.destination,
-            animation: google.maps.Animation.DROP,
-            draggable:true,
-            title: 'To',
-            key: Date.now()+1
-        });
-
+        // Rebuild the markers state from scratch
         this.setState({markers:[originMarker, destinationMarker]});
+
+        this.calculateMatrix();
+    }
+
+    createMarker(latlng,title, key) {
+        var marker = new google.maps.Marker({
+            position: latlng,
+            title: title,
+            draggable:true,
+            key: key
+        });
+
+        return marker;
+    }
+
+    handleDragEnd(index, event){
+        if (index==0){
+            this.state.origin=event.latLng;
+        } else {
+            this.state.destination=event.latLng;
+        }
+        this.calculateMatrix();
+    }
+
+    calculateMatrix(){
 
         if (this.state.destination) {
 
@@ -63,8 +79,6 @@ export default class MyGoogleMap extends Component {
 
             this.service.getDistanceMatrix(param, this.retrieveDataFromGoogleMap);
         }
-
-
     }
 
     retrieveDataFromGoogleMap(response, status){
@@ -81,10 +95,11 @@ export default class MyGoogleMap extends Component {
                     <GoogleMap
                         defaultZoom={this.props.zoom}
                         defaultCenter={this.props.center}
-                        onClick={this.onMapClick}>
+                        onClick={this.handleMapClick}>
                             {this.state.markers.map((marker, index) => {
                                 return (
-                                    <Marker {...marker} />
+                                    <Marker {...marker}
+                                    onDragend={this.handleDragEnd.bind(this, index)}/>
                                 );
                             })}
                     </GoogleMap>
@@ -103,8 +118,6 @@ MyGoogleMap.defaultProps = {
     center: new google.maps.LatLng(49.2827, -123.1207),
     zoom:12
 };
-
-
 
 function mapDispatchToProps(dispatch) {
     return bindActionCreators({ fetchDistanceMatrix }, dispatch);

@@ -6,18 +6,24 @@ import { connect } from 'react-redux';
 
 class CarsList extends Component{
     renderCars(){
-        console.log('this.props.distance : '+ this.props.distance);
-
         if (this.props.distance){
-            console.log('this.props.distance : '+ this.props.distance.rows);
-
             return this.props.distance.rows.map((row) => {
                 return row.elements.map((data) => {
                     return (
-                        <tr key={new Date()}>
-                            <td>{data.distance.text}</td>
-                            <td>{data.duration.text}</td>
-                        </tr>
+                        <tbody>
+                            <tr key={new Date()}>
+                                <td>CAR2GO - EVO</td>
+                                <td>{data.distance.text}</td>
+                                <td>{data.duration.text}</td>
+                                <td>{((data.duration.value/60) * 0.40) + 1}</td>
+                            </tr>
+                            <tr key={new Date()+1}>
+                                <td>MODO</td>
+                                <td>{data.distance.text}</td>
+                                <td>{data.duration.text}</td>
+                                <td>{((data.duration.value/60) * 0.40) + 1}</td>
+                            </tr>
+                        </tbody>
                     )
                 })
             });
@@ -29,13 +35,14 @@ class CarsList extends Component{
             <table className="table table-hover">
                 <thead>
                 <tr>
+                    <th></th>
                     <th>Distance</th>
                     <th>Duration</th>
+                    <th>Cost($)</th>
                 </tr>
                 </thead>
-                <tbody>
                 {this.renderCars()}
-                </tbody>
+
             </table>
         );
     }
