@@ -3,7 +3,7 @@
  */
 import React, {Component} from 'react';
 import { GoogleMapLoader, GoogleMap , Marker } from 'react-google-maps';
-import {fetchDistanceMatrix} from '../actions/index';
+import {fetchDistanceMatrixDriving, fetchDistanceMatrixBicycling, fetchDistanceMatrixTransit, fetchDistanceMatrixWalking} from '../actions/index';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -20,10 +20,14 @@ export default class MyGoogleMap extends Component {
         };
 
         this.handleMapClick = this.handleMapClick.bind(this);
-        this.retrieveDataFromGoogleMap = this.retrieveDataFromGoogleMap.bind(this);
+        this.retrieveDataFromGoogleMapDriving = this.retrieveDataFromGoogleMapDriving.bind(this);
+        this.retrieveDataFromGoogleMapWalking = this.retrieveDataFromGoogleMapWalking.bind(this);
+        this.retrieveDataFromGoogleMapBicycling = this.retrieveDataFromGoogleMapBicycling.bind(this);
+        this.retrieveDataFromGoogleMapTransit = this.retrieveDataFromGoogleMapTransit.bind(this);
         this.createMarker = this.createMarker.bind(this);
         this.calculateMatrix = this.calculateMatrix.bind(this);
         this.handleDragEnd = this.handleDragEnd.bind(this);
+        this.createParamRequest = this.createParamRequest.bind(this);
 
         this.service = new google.maps.DistanceMatrixService();
 
@@ -65,25 +69,49 @@ export default class MyGoogleMap extends Component {
     calculateMatrix(){
 
         if (this.state.destination) {
+            this.service.getDistanceMatrix(this.createParamRequest(google.maps.TravelMode.DRIVING), this.retrieveDataFromGoogleMapDriving);
+            this.service.getDistanceMatrix(this.createParamRequest(google.maps.TravelMode.BICYCLING), this.retrieveDataFromGoogleMapBicycling);
+            this.service.getDistanceMatrix(this.createParamRequest(google.maps.TravelMode.TRANSIT), this.retrieveDataFromGoogleMapTransit);
+            this.service.getDistanceMatrix(this.createParamRequest(google.maps.TravelMode.WALKING), this.retrieveDataFromGoogleMapWalking);
+        }
+    }
 
-            // create the param for the googlemap request
-            const param = {
+    createParamRequest(travelMode){
+
+        return(
+            {
                 origins: [this.state.origin],
                 destinations: [this.state.destination],
-                travelMode: google.maps.TravelMode.DRIVING,
+                travelMode: travelMode,
                 /*transitOptions: TransitOptions,*/
                 /*drivingOptions: DrivingOptions,*/
                 avoidHighways: false,
                 avoidTolls: false
-            };
+            }
+        );
+    }
 
-            this.service.getDistanceMatrix(param, this.retrieveDataFromGoogleMap);
+    retrieveDataFromGoogleMapDriving(response, status){
+        if (status == google.maps.DistanceMatrixStatus.OK) {
+            this.props.fetchDistanceMatrixDriving(response);
         }
     }
 
-    retrieveDataFromGoogleMap(response, status){
+    retrieveDataFromGoogleMapWalking(response, status){
         if (status == google.maps.DistanceMatrixStatus.OK) {
-            this.props.fetchDistanceMatrix(response);
+            this.props.fetchDistanceMatrixWalking(response);
+        }
+    }
+
+    retrieveDataFromGoogleMapBicycling(response, status){
+        if (status == google.maps.DistanceMatrixStatus.OK) {
+            this.props.fetchDistanceMatrixBicycling(response);
+        }
+    }
+
+    retrieveDataFromGoogleMapTransit(response, status){
+        if (status == google.maps.DistanceMatrixStatus.OK) {
+            this.props.fetchDistanceMatrixTransit(response);
         }
     }
 
@@ -120,7 +148,7 @@ MyGoogleMap.defaultProps = {
 };
 
 function mapDispatchToProps(dispatch) {
-    return bindActionCreators({ fetchDistanceMatrix }, dispatch);
+    return bindActionCreators({ fetchDistanceMatrixDriving, fetchDistanceMatrixWalking, fetchDistanceMatrixTransit, fetchDistanceMatrixBicycling }, dispatch);
 }
 
 export default connect(null, mapDispatchToProps)(MyGoogleMap);
